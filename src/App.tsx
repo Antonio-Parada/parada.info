@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Terminal, Shield, Cpu, Activity, Database, AlertCircle } from 'lucide-react'
+import { Shield, Cpu, Activity, Database, AlertCircle } from 'lucide-react'
 import './App.css'
 
 const BOOT_LOGS = [
