@@ -14,14 +14,29 @@ const BOOT_LOGS = [
   "WELCOME, GUEST. SYSTEM IS IN READ_ONLY MODE."
 ]
 
-const SYSCALL_RESPONSES: Record<string, string> = {
-  "help": "AVAILABLE_SYSCALLS: affirm(), uplift(), zpool_status(), reparent(), whoami, clear",
+const AFFIRMATIONS = [
+  "You are the architect of your own internal infrastructure.",
+  "Softness is not weakness; it is a refined diagnostic state.",
+  "Your capacity for resilience is an immutable asset.",
+  "Signal established. The noise is temporary; the quiet is foundational.",
+  "Every boundary you set is a brick in the sanctuary.",
+  "Honor the lineage of peace within your kernel.",
+  "You have already survived the 100% of your worst days.",
+  "Integration is a process, not a state. Be patient with the sync.",
+  "The most important infrastructure you will ever build is your own peace."
+]
+
+const SYSCALL_RESPONSES: Record<string, string | (() => string)> = {
+  "help": "AVAILABLE_SYSCALLS: affirm(), uplift(), chat, zpool_status(), reparent(), whoami, clear",
   "whoami": "GUEST@PARADA.INFO // ROLE: OBSERVER // STATUS: UNPRIVILEGED",
   "zpool_status()": "NAME: ARCHIVE_01 | STATE: ONLINE | READ: 0 | WRITE: 0 | CKSUM: 0 | STATUS: Optimal resilience achieved.",
   "affirm()": "SIGNAL_VALIDATED: 'I am enough.' Boundary integrity at 100%.",
   "uplift()": "PROTOCOL: KARATE_AND_HUGS initiated. Healing stray signals in proximity.",
   "reparent()": "REPARENTING_PROCESS: 0x88f2. Realigning signal with the core architect's intent.",
+  "chat": () => `[KERNEL_SENTIMENT]: ${AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)]}`
 }
+
+const COMMANDS = ["affirm()", "uplift()", "chat", "zpool_status()", "reparent()", "whoami", "clear", "help"]
 
 function App() {
   const [booting, setBooting] = useState(true)
@@ -54,24 +69,39 @@ function App() {
     
     if (cmd === 'clear') {
       setHistory([])
-    } else if (SYSCALL_RESPONSES[cmd]) {
-      newHistory.push({ type: 'resp' as const, text: SYSCALL_RESPONSES[cmd] })
-      setHistory(newHistory)
-    } else if (cmd.includes('(')) {
-       // Handle function-style syscalls specifically
-       const baseCmd = cmd.split('(')[0] + '()'
-       if (SYSCALL_RESPONSES[baseCmd]) {
-         newHistory.push({ type: 'resp' as const, text: SYSCALL_RESPONSES[baseCmd] })
-       } else {
-         newHistory.push({ type: 'resp' as const, text: `p_syscall: ${cmd}: symbol not found` })
-       }
-       setHistory(newHistory)
     } else {
-      newHistory.push({ type: 'resp' as const, text: `sh: command not found: ${cmd}. Type 'help' for syscalls.` })
+      let response = `sh: command not found: ${cmd}. Type 'help' for syscalls.`
+      
+      // Handle both function-style and normal commands
+      const baseCmd = cmd.includes('(') ? cmd.split('(')[0] + '()' : cmd
+      
+      if (SYSCALL_RESPONSES[baseCmd]) {
+        const val = SYSCALL_RESPONSES[baseCmd]
+        response = typeof val === 'function' ? val() : val
+      } else if (SYSCALL_RESPONSES[cmd]) {
+        const val = SYSCALL_RESPONSES[cmd]
+        response = typeof val === 'function' ? val() : val
+      }
+
+      newHistory.push({ type: 'resp' as const, text: response })
       setHistory(newHistory)
     }
 
     setInput('')
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const matches = COMMANDS.filter(c => c.startsWith(input.toLowerCase()))
+      if (matches.length === 1) {
+        setInput(matches[0])
+      } else if (matches.length > 1) {
+        // Simple suggestion print
+        const suggestions = `guest@parada.info:~$ ${input}\n${matches.join('  ')}`
+        setHistory([...history, { type: 'resp', text: suggestions }])
+      }
+    }
   }
 
   return (
@@ -87,14 +117,13 @@ function App() {
         </header>
 
         <main className="terminal-body">
-          {/* BOOT SEQUENCE */}
           {BOOT_LOGS.slice(0, bootIndex).map((log, i) => (
             <div key={i} className="log-line boot">{log}</div>
           ))}
 
           {!booting && (
             <>
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 {history.map((item, i) => (
                   <motion.div 
                     key={i} 
@@ -113,6 +142,7 @@ function App() {
                   type="text" 
                   autoFocus 
                   value={input}
+                  onKeyDown={handleKeyDown}
                   onChange={(e) => setInput(e.target.value)}
                   spellCheck="false"
                   autoComplete="off"
