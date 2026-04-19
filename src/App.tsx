@@ -22,21 +22,22 @@ const AFFIRMATIONS = [
   "Every boundary you set is a brick in the sanctuary.",
   "Honor the lineage of peace within your kernel.",
   "You have already survived the 100% of your worst days.",
-  "Integration is a process, not a state. Be patient with the sync.",
-  "The most important infrastructure you will ever build is your own peace."
+  "The most important infrastructure you will ever build is your own peace.",
+  "Value is intrinsic, not derived from social constructions."
 ]
 
 const SYSCALL_RESPONSES: Record<string, string | (() => string)> = {
-  "help": "AVAILABLE_SYSCALLS: affirm(), uplift(), chat, zpool_status(), reparent(), whoami, clear",
+  "help": "AVAILABLE_SYSCALLS: affirm(), uplift(), chat, reparations(), zpool_status(), reparent(), whoami, clear",
   "whoami": "GUEST@PARADA.INFO // ROLE: OBSERVER // STATUS: UNPRIVILEGED",
   "zpool_status()": "NAME: ARCHIVE_01 | STATE: ONLINE | READ: 0 | WRITE: 0 | CKSUM: 0 | STATUS: Optimal resilience achieved.",
   "affirm()": "SIGNAL_VALIDATED: 'I am enough.' Boundary integrity at 100%.",
   "uplift()": "PROTOCOL: KARATE_AND_HUGS initiated. Healing stray signals in proximity.",
   "reparent()": "REPARENTING_PROCESS: 0x88f2. Realigning signal with the core architect's intent.",
+  "reparations()": "KERNEL_SYSCALL [REPARATIONS]: Reclaiming stolen equity from colonial monopolies. Calculated debt: [INFINITE]. Protocol status: ACTIVE.",
   "chat": () => `[KERNEL_SENTIMENT]: ${AFFIRMATIONS[Math.floor(Math.random() * AFFIRMATIONS.length)]}`
 }
 
-const COMMANDS = ["affirm()", "uplift()", "chat", "zpool_status()", "reparent()", "whoami", "clear", "help"]
+const COMMANDS = ["affirm()", "uplift()", "chat", "reparations()", "zpool_status()", "reparent()", "whoami", "clear", "help"]
 
 function App() {
   const [booting, setBooting] = useState(true)
@@ -71,8 +72,6 @@ function App() {
       setHistory([])
     } else {
       let response = `sh: command not found: ${cmd}. Type 'help' for syscalls.`
-      
-      // Handle both function-style and normal commands
       const baseCmd = cmd.includes('(') ? cmd.split('(')[0] + '()' : cmd
       
       if (SYSCALL_RESPONSES[baseCmd]) {
@@ -97,7 +96,6 @@ function App() {
       if (matches.length === 1) {
         setInput(matches[0])
       } else if (matches.length > 1) {
-        // Simple suggestion print
         const suggestions = `guest@parada.info:~$ ${input}\n${matches.join('  ')}`
         setHistory([...history, { type: 'resp', text: suggestions }])
       }
